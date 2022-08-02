@@ -1,0 +1,1 @@
+cmake .. && make && ./test_bc

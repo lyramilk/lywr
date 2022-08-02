@@ -1,0 +1,1 @@
+cls && cmake E:\微云自动同步\工作自动同步\个人工程\lyvm\lyvm & devenv lyvm.vcxproj /build "Debug|x64"
