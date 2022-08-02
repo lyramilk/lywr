@@ -138,7 +138,8 @@ lywrrc LYWR_EXPORT lywr_function_exec(lywr_ctx* ctx,lywr_function_spec* spec)
 				session.memory = nullptr;
 			}
 
-			for(unsigned int i=0;i<mdl->merge_memory_count;++i){
+			unsigned int i=0;
+			for(;i<mdl->merge_memory_count;++i){
 				// 导入其它模块的内存
 				TRACE("导入其它模块的内存 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n");
 				if(mdl->merge_memory[i].type == lywr_wasm_resource_link_type_local){
@@ -156,7 +157,7 @@ lywrrc LYWR_EXPORT lywr_function_exec(lywr_ctx* ctx,lywr_function_spec* spec)
 				}
 			}
 
-			for(wasm_varuint32 i=0;i<mdl->datas_count;++i){
+			for(i=0;i<mdl->datas_count;++i){
 				wasm_data_segment* ds = mdl->datas + i;
 				if(mdl->merge_memory[mdl->datas[i].index].type == lywr_wasm_resource_link_type_local){
 					lywr_linearmemory* m = session.memory[mdl->merge_memory[mdl->datas[i].index].index];
@@ -199,7 +200,8 @@ lywrrc LYWR_EXPORT lywr_function_exec(lywr_ctx* ctx,lywr_function_spec* spec)
 				wasm_func_type* ftype = mdl->types + typeindex;
 
 				if(mdl->merge_function[symbol_finded->entry->index].type == lywr_wasm_resource_link_type_local){
-					for(wasm_varuint32 i=0;i<ftype->param_count;++i){
+					wasm_varuint32 i;
+					for(i=0;i<ftype->param_count;++i){
 						rc = lywr_datastack_push_u64(&session.stack,spec->argv[i].u64);
 						if(rc != lywrrc_ok) goto label_final;
 					}
@@ -211,7 +213,7 @@ lywrrc LYWR_EXPORT lywr_function_exec(lywr_ctx* ctx,lywr_function_spec* spec)
 						break;
 					}
 					TRACE("返回数量=%d\n",ftype->return_count);
-					for(wasm_varuint32 i=0;i<ftype->return_count;++i){
+					for(i=0;i<ftype->return_count;++i){
 						TRACE("需要压入返回值：%d\n",ftype->return_type[i]);
 
 						if(ftype->return_type[i] == wasm_value_type_i32){

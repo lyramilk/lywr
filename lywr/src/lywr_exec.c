@@ -44,17 +44,6 @@ static lywr_dispatch_type dispatch2[256] = {
 	LYWR_OP_DEFINE(LYWR_OP_CALLBACK,LYWR_OP_CALLBACK_UNUSE)
 };
 
-#include <time.h>
-#include <sys/sysinfo.h>
-long long get_timespec(){
-		struct timespec ts;
-		clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
-		long long s = ts.tv_sec;
-		long long n = ts.tv_nsec;
-		//return (s * 1000000000 + n) / 1000;
-		return s * 1000000000 + n;
-}
-
 lywrrc lywr_module_call_function_by_index(lywr_ctx* ctx,lywr_module* mdl,lywr_session* session,wasm_varuint32 index)
 {
 	if(mdl->merge_function[index].type == lywr_wasm_resource_link_type_local){
@@ -87,7 +76,8 @@ lywrrc lywr_module_call_function_by_index(lywr_ctx* ctx,lywr_module* mdl,lywr_se
 		// 把每种类型的local数量都加在一起
 		wasm_varuint32 all_local_count = 0;
 		all_local_count += ftype->param_count;
-		for(wasm_varuint32 local_count_index = 0;local_count_index<fb->local_count;++local_count_index){
+		wasm_varuint32 local_count_index;
+		for(local_count_index = 0;local_count_index<fb->local_count;++local_count_index){
 			all_local_count += fb->locals[local_count_index].count;
 		}
 
@@ -96,8 +86,8 @@ lywrrc lywr_module_call_function_by_index(lywr_ctx* ctx,lywr_module* mdl,lywr_se
 
 		session->frame = fr;
 
-
-		for(wasm_varuint32 i=0;i<ftype->param_count;++i){
+		wasm_varuint32 i;
+		for(i=0;i<ftype->param_count;++i){
 			TRACE("从堆栈中弹出参数并转化为local[%d]\n",ftype->param_count - i - 1);
 			lywr_data_cell* data;
 			lywrrc rc = lywr_data_array_at(&fr->local,ftype->param_count - i - 1,&data);
@@ -117,8 +107,8 @@ lywrrc lywr_module_call_function_by_index(lywr_ctx* ctx,lywr_module* mdl,lywr_se
 		}
 
 		wasm_varuint32 local_index = ftype->param_count;
-		for(wasm_varuint32 local_count_index = 0;local_count_index<fb->local_count;++local_count_index){
-			for(wasm_varuint32 i = 0;i<fb->locals[local_count_index].count;++i,++local_index){
+		for(local_count_index = 0;local_count_index<fb->local_count;++local_count_index){
+			for(i = 0;i<fb->locals[local_count_index].count;++i,++local_index){
 				if(fb->locals[local_count_index].type == wasm_value_type_i32){
 					lywr_data_cell* data = nullptr;
 					lywr_data_array_at(&fr->local,local_index,&data);
@@ -264,7 +254,8 @@ lywrrc lywr_module_call_function_by_index(lywr_ctx* ctx,lywr_module* mdl,lywr_se
 					{
 						TRACE("br退出,层级=%d\n",inst->u.relative_depth);
 						const lywr_instruction* parent = nullptr;
-						for(int i=0;i<=inst->u.relative_depth;++i){
+						int i;
+						for(i=0;i<=inst->u.relative_depth;++i){
 							TRACE("退出一层，%d\n",i);
 							LYWR_FUNCTION_VERIFY(lywr_instruction_stack_pop(&session->frame->runblock,&parent,0));
 
@@ -289,7 +280,8 @@ lywrrc lywr_module_call_function_by_index(lywr_ctx* ctx,lywr_module* mdl,lywr_se
 						if(value != 0){
 							TRACE("br_if退出,层级=%d\n",inst->u.relative_depth);
 							const lywr_instruction* parent = nullptr;
-							for(int i=0;i<=inst->u.relative_depth;++i){
+							int i;
+							for(i=0;i<=inst->u.relative_depth;++i){
 								TRACE("退出一层，%d\n",i);
 								LYWR_FUNCTION_VERIFY(lywr_instruction_stack_pop(&session->frame->runblock,&parent,0));
 
@@ -323,7 +315,8 @@ lywrrc lywr_module_call_function_by_index(lywr_ctx* ctx,lywr_module* mdl,lywr_se
 						}
 
 						const lywr_instruction* parent = nullptr;
-						for(int i=0;i<=deep;++i){
+						int i;
+						for(i=0;i<=deep;++i){
 							TRACE("退出一层，%d\n",i);
 							LYWR_FUNCTION_VERIFY(lywr_instruction_stack_pop(&session->frame->runblock,&parent,0));
 
@@ -2222,7 +2215,8 @@ lywrrc lywr_module_call_function_by_index(lywr_ctx* ctx,lywr_module* mdl,lywr_se
 		spec.rval = ftype->spec.rval;
 		spec.spec = ftype->spec.shortcut;
 
-		for(wasm_varuint32 i=0;i<spec.argc;++i){
+		wasm_varuint32 i;
+		for(i=0;i<spec.argc;++i){
 			TRACE("弹出外部调用参数:%d\n",i);
 			lywrrc rc = lywr_datastack_pop_u64(&session->stack,&spec.argv[i].u64,0);
 			if(rc != lywrrc_ok) {
@@ -2240,7 +2234,7 @@ lywrrc lywr_module_call_function_by_index(lywr_ctx* ctx,lywr_module* mdl,lywr_se
 		}
 
 		TRACE("返回数量=%d\n",ftype->return_count);
-		for(wasm_varuint32 i=0;i<ftype->return_count;++i){
+		for(i=0;i<ftype->return_count;++i){
 			TRACE("需要压入返回值：%d\n",ftype->return_type[i]);
 
 			lywrrc rc = lywr_datastack_push_u64(&session->stack,spec.rval[i].u64);
@@ -2361,7 +2355,8 @@ lywrrc lywr_op_br_callback(lywr_ctx* ctx,lywr_module* mdl,lywr_session* session,
 {
 	TRACE("br退出,层级=%d\n",inst->u.relative_depth);
 	const lywr_instruction* parent = nullptr;
-	for(int i=0;i<=inst->u.relative_depth;++i){
+	int i;
+	for(i=0;i<=inst->u.relative_depth;++i){
 		TRACE("退出一层，%d\n",i);
 		lywrrc rc = lywr_instruction_stack_pop(&session->frame->runblock,&parent,0);
 		if(rc != lywrrc_ok) return rc;
@@ -2391,7 +2386,8 @@ lywrrc lywr_op_br_if_callback(lywr_ctx* ctx,lywr_module* mdl,lywr_session* sessi
 	if(value != 0){
 		TRACE("br_if退出,层级=%d\n",inst->u.relative_depth);
 		const lywr_instruction* parent = nullptr;
-		for(int i=0;i<=inst->u.relative_depth;++i){
+		int i;
+		for(i=0;i<=inst->u.relative_depth;++i){
 			TRACE("退出一层，%d\n",i);
 			lywrrc rc = lywr_instruction_stack_pop(&session->frame->runblock,&parent,0);
 			if(rc != lywrrc_ok) return rc;
@@ -2429,7 +2425,8 @@ lywrrc lywr_op_br_table_callback(lywr_ctx* ctx,lywr_module* mdl,lywr_session* se
 	}
 
 	const lywr_instruction* parent = nullptr;
-	for(int i=0;i<=deep;++i){
+	int i;
+	for(i=0;i<=deep;++i){
 		TRACE("退出一层，%d\n",i);
 		lywrrc rc = lywr_instruction_stack_pop(&session->frame->runblock,&parent,0);
 		if(rc != lywrrc_ok) return rc;

@@ -77,14 +77,16 @@ lywrrc lywr_destory(lywr_ctx* ctx)
 		while(lywr_rbtree2_ok == lywr_rbtree2_scan_next(iter,(const void**)&oldmodule)){
 			if(oldmodule->type == lywr_module_type_wasm){
 				// 释放函数的spec
-				for(wasm_varuint32 c = 0;c < oldmodule->types_count;++c){
+				wasm_varuint32 c;
+				for(c = 0;c < oldmodule->types_count;++c){
 					wasm_func_type* ftype = &oldmodule->types[c];
 					lywr_pool_free(ctx->mloader,ftype->spec.argv);
 					lywr_pool_free(ctx->mloader,ftype->spec.rval);
 				}
 
 				// 释放指令对象
-				for(wasm_varuint32 i = 0; i < oldmodule->functionbodys_count ;++i){
+				wasm_varuint32 i;
+				for(i = 0; i < oldmodule->functionbodys_count ;++i){
 					wasm_function_body* fb = oldmodule->functionbodys + i;
 					if(fb->code.phase == lywr_lazy_data_phase_compiled){
 						lywr_expression* expr = &fb->code.expr;
@@ -124,7 +126,8 @@ lywrrc static lywr_parse_type_section(lywr_ctx* ctx,lywr_module* mdl,long long s
 	TRACE("entries数量:%d\n",mdl->types_count);
 
 	mdl->types = lywr_poolx_malloc(mdl->mloader,mdl->types_count * sizeof(*mdl->types));
-	for(wasm_varuint32 c = 0;c < mdl->types_count;++c){
+	wasm_varuint32 c;
+	for(c = 0;c < mdl->types_count;++c){
 		LYWRRC_VERIFY(lywr_parse_wasm_func_type(ctx,mdl,&mdl->types[c]));
 		wasm_func_type* ftype = &mdl->types[c];
 
@@ -140,7 +143,8 @@ lywrrc static lywr_parse_type_section(lywr_ctx* ctx,lywr_module* mdl,long long s
 
 
 		int t =0;
-		for(int i=0;i<ftype->param_count;++i){
+		int i;
+		for(i=0;i<ftype->param_count;++i){
 			if(ftype->param_types[i] == wasm_value_type_i32){
 				ftype->spec.shortcut[t++] = 'i';
 				ftype->spec.argv[i].type = lywr_data_i32;
@@ -158,7 +162,7 @@ lywrrc static lywr_parse_type_section(lywr_ctx* ctx,lywr_module* mdl,long long s
 			}
 		}
 		ftype->spec.shortcut[t++] = ':';
-		for(int i=0;i<ftype->return_count;++i){
+		for(i=0;i<ftype->return_count;++i){
 			if(ftype->return_type[i] == wasm_value_type_i32){
 				ftype->spec.shortcut[t++] = 'i';
 				ftype->spec.rval[i].type = lywr_data_i32;
@@ -190,7 +194,8 @@ lywrrc static lywr_parse_import_section(lywr_ctx* ctx,lywr_module* mdl,long long
 
 	mdl->imports = lywr_poolx_malloc(mdl->mloader,mdl->imports_count * sizeof(*mdl->imports));
 
-	for(wasm_varuint32 c = 0;c < mdl->imports_count;++c){
+	wasm_varuint32 c;
+	for(c = 0;c < mdl->imports_count;++c){
 		LYWRRC_VERIFY(lywr_parse_wasm_import_entry(ctx,mdl,&mdl->imports[c]));
 	}
 
@@ -205,7 +210,8 @@ lywrrc static lywr_parse_function_section(lywr_ctx* ctx,lywr_module* mdl,long lo
 
 	mdl->functions = lywr_poolx_malloc(mdl->mloader,mdl->functions_count * sizeof(*mdl->functions));
 
-	for(wasm_varuint32 c = 0;c < mdl->functions_count;++c){
+	wasm_varuint32 c;
+	for(c = 0;c < mdl->functions_count;++c){
 		LYWRRC_VERIFY(lywr_parse_wasm_varuint32(ctx,mdl,&mdl->functions[c]));
 		TRACE("定义function[%d]=%d\n",c,mdl->functions[c]);
 	}
@@ -219,7 +225,8 @@ lywrrc static lywr_parse_table_section(lywr_ctx* ctx,lywr_module* mdl,long long 
 	TRACE("entries数量:%d\n",mdl->tables_count);
 
 	mdl->tables = lywr_poolx_malloc(mdl->mloader,mdl->tables_count * sizeof(*mdl->tables));
-	for(wasm_varuint32 c = 0;c < mdl->tables_count;++c){
+	wasm_varuint32 c;
+	for(c = 0;c < mdl->tables_count;++c){
 		LYWRRC_VERIFY(lywr_parse_wasm_table_type(ctx,mdl,&mdl->tables[c]));
 	}
 	return lywrrc_ok;
@@ -232,7 +239,8 @@ lywrrc static lywr_parse_memory_section(lywr_ctx* ctx,lywr_module* mdl,long long
 	TRACE("entries数量:%d\n",mdl->memorys_count);
 
 	mdl->memorys = lywr_poolx_malloc(mdl->mloader,mdl->memorys_count * sizeof(*mdl->memorys));
-	for(wasm_varuint32 c = 0;c < mdl->memorys_count;++c){
+	wasm_varuint32 c;
+	for(c = 0;c < mdl->memorys_count;++c){
 		LYWRRC_VERIFY(lywr_parse_wasm_memory_type(ctx,mdl,&mdl->memorys[c]));
 		TRACE("读取到memeory=%llu~%llu\n",mdl->memorys[c].limits.initial,mdl->memorys[c].limits.maximum);
 	}
@@ -246,7 +254,8 @@ lywrrc static lywr_parse_global_section(lywr_ctx* ctx,lywr_module* mdl,long long
 	TRACE("entries数量:%d\n",mdl->globals_count);
 
 	mdl->globals = lywr_poolx_malloc(mdl->mloader,mdl->globals_count * sizeof(*mdl->globals));
-	for(wasm_varuint32 c = 0;c < mdl->globals_count;++c){
+	wasm_varuint32 c;
+	for(c = 0;c < mdl->globals_count;++c){
 		LYWRRC_VERIFY(lywr_parse_wasm_global_variable(ctx,mdl,&mdl->globals[c]));
 	}
 	return lywrrc_ok;
@@ -259,11 +268,12 @@ lywrrc static lywr_parse_export_section(lywr_ctx* ctx,lywr_module* mdl,long long
 	TRACE("entries数量:%d\n",mdl->exports_count);
 
 	mdl->exports = lywr_poolx_malloc(mdl->mloader,mdl->exports_count * sizeof(*mdl->exports));
-	for(wasm_varuint32 c = 0;c < mdl->exports_count;++c){
+	wasm_varuint32 c;
+	for(c = 0;c < mdl->exports_count;++c){
 		LYWRRC_VERIFY(lywr_parse_wasm_export_entry(ctx,mdl,&mdl->exports[c]));
 	}
 
-	for(wasm_varuint32 c = 0;c < mdl->exports_count;++c){
+	for(c = 0;c < mdl->exports_count;++c){
 		lywr_symbol* newnode = lywr_poolx_malloc(mdl->mloader,sizeof(lywr_symbol));
 		if(newnode == nullptr){
 			return lywrrc_oom;
@@ -304,7 +314,8 @@ lywrrc static lywr_parse_element_section(lywr_ctx* ctx,lywr_module* mdl,long lon
 	TRACE("entries数量:%d\n",mdl->elements_count);
 
 	mdl->elements = lywr_poolx_malloc(mdl->mloader,mdl->elements_count * sizeof(*mdl->elements));
-	for(wasm_varuint32 c = 0;c < mdl->elements_count;++c){
+	wasm_varuint32 c;
+	for(c = 0;c < mdl->elements_count;++c){
 		LYWRRC_VERIFY(lywr_parse_wasm_elem_segment(ctx,mdl,&mdl->elements[c]));
 	}
 	return lywrrc_ok;
@@ -317,7 +328,8 @@ lywrrc static lywr_parse_code_section(lywr_ctx* ctx,lywr_module* mdl,long long s
 	TRACE("entries数量:%d\n",mdl->functionbodys_count);
 
 	mdl->functionbodys = lywr_poolx_malloc(mdl->mloader,mdl->functionbodys_count * sizeof(*mdl->functionbodys));
-	for(wasm_varuint32 c = 0;c < mdl->functionbodys_count;++c){
+	wasm_varuint32 c;
+	for(c = 0;c < mdl->functionbodys_count;++c){
 		LYWRRC_VERIFY(lywr_parse_wasm_function_body(ctx,mdl,&mdl->functionbodys[c]));
 		TRACE("加载函数[%d]=%lld字节\n",c,mdl->functionbodys[c].body_size);
 	}
@@ -331,7 +343,8 @@ lywrrc static lywr_parse_data_section(lywr_ctx* ctx,lywr_module* mdl,long long s
 	TRACE("entries数量:%d\n",mdl->datas_count);
 
 	mdl->datas = lywr_poolx_malloc(mdl->mloader,mdl->datas_count * sizeof(*mdl->datas));
-	for(wasm_varuint32 c = 0;c < mdl->datas_count;++c){
+	wasm_varuint32 c;
+	for(c = 0;c < mdl->datas_count;++c){
 		LYWRRC_VERIFY(lywr_parse_wasm_data_segment(ctx,mdl,&mdl->datas[c]));
 	}
 	return lywrrc_ok;
@@ -525,7 +538,8 @@ lywrrc lywr_load_wasm_module(lywr_ctx* ctx,lywr_module_spec* spec,const char* mo
 	mdl->merge_memory_count = mdl->memorys_count;
 	mdl->merge_global_count = mdl->globals_count;
 
-	for(wasm_varuint32 i = 0;i < mdl->imports_count;++i)
+	wasm_varuint32 i;
+	for(i = 0;i < mdl->imports_count;++i)
 	{
 		switch(mdl->imports[i].kind){
 			case 0: mdl->merge_function_count++;
@@ -552,7 +566,7 @@ lywrrc lywr_load_wasm_module(lywr_ctx* ctx,lywr_module_spec* spec,const char* mo
 	wasm_varuint32 merge_memory_index = 0;
 	wasm_varuint32 merge_global_index = 0;
 
-	for(wasm_varuint32 i = 0;i < mdl->imports_count;++i)
+	for(i = 0;i < mdl->imports_count;++i)
 	{
 		switch(mdl->imports[i].kind){
 			case 0:{
@@ -586,25 +600,25 @@ lywrrc lywr_load_wasm_module(lywr_ctx* ctx,lywr_module_spec* spec,const char* mo
 		}
 	}
 
-	for(wasm_varuint32 i = 0;i < mdl->functionbodys_count;++i){
+	for(i = 0;i < mdl->functionbodys_count;++i){
 		mdl->merge_function[merge_function_index].type = lywr_wasm_resource_link_type_local;
 		mdl->merge_function[merge_function_index].index = i;
 		++merge_function_index;
 	}
 
-	for(wasm_varuint32 i = 0;i < mdl->tables_count;++i){
+	for(i = 0;i < mdl->tables_count;++i){
 		mdl->merge_table[merge_table_index].type = lywr_wasm_resource_link_type_local;
 		mdl->merge_table[merge_table_index].index = i;
 		++merge_table_index;
 	}
 
-	for(wasm_varuint32 i = 0;i < mdl->memorys_count;++i){
+	for(i = 0;i < mdl->memorys_count;++i){
 		mdl->merge_memory[merge_memory_index].type = lywr_wasm_resource_link_type_local;
 		mdl->merge_memory[merge_memory_index].index = i;
 		++merge_memory_index;
 	}
 
-	for(wasm_varuint32 i = 0;i < mdl->globals_count;++i){
+	for(i = 0;i < mdl->globals_count;++i){
 		mdl->merge_global[merge_global_index].type = lywr_wasm_resource_link_type_local;
 		mdl->merge_global[merge_global_index].index = i;
 		++merge_global_index;
@@ -612,7 +626,7 @@ lywrrc lywr_load_wasm_module(lywr_ctx* ctx,lywr_module_spec* spec,const char* mo
 
 
 	// 为table填写element_list
-	for(wasm_varuint32 i = 0;i < mdl->elements_count;++i){
+	for(i = 0;i < mdl->elements_count;++i){
 		wasm_elem_segment* elem = mdl->elements + i;
 		if(mdl->merge_table[elem->index].type != lywr_wasm_resource_link_type_local){
 			return lywrrc_bad_format;
@@ -627,7 +641,8 @@ lywrrc lywr_load_wasm_module(lywr_ctx* ctx,lywr_module_spec* spec,const char* mo
 			}
 		}
 
-		for(wasm_varuint32 n = 0;n<elem->num_elem;++n){
+		wasm_varuint32 n;
+		for(n = 0;n<elem->num_elem;++n){
 			mdl->tables[mdl->merge_table[elem->index].index].element_list[offset + n] = elem->elems[n];
 		}
 	}

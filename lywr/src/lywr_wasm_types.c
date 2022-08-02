@@ -318,7 +318,8 @@ lywrrc lywr_parse_wasm_func_type(lywr_ctx* ctx,lywr_module* mdl,wasm_func_type* 
 	if(value->param_types == nullptr) return lywrrc_oom;
 
 	//TRACE("参数数量:%d\n",value->param_count);
-	for(int param_index = 0;param_index < value->param_count;++param_index){
+	int param_index ;
+	for(param_index = 0;param_index < value->param_count;++param_index){
 		LYWRRC_VERIFY(lywr_parse_wasm_value_type(ctx,mdl,&value->param_types[param_index]));
 		//TRACE("参数索引:%d\n",param_index);
 		//TRACE("参数类型:%x\n",value->param_types[param_index]);
@@ -330,7 +331,8 @@ lywrrc lywr_parse_wasm_func_type(lywr_ctx* ctx,lywr_module* mdl,wasm_func_type* 
 	value->return_type = lywr_poolx_malloc(mdl->mloader,sizeof(*value->return_type) * value->return_count);
 	if(value->return_type == nullptr) return lywrrc_oom;
 
-	for(int return_index = 0;return_index < value->return_count;++return_index){
+	int return_index;
+	for(return_index = 0;return_index < value->return_count;++return_index){
 		LYWRRC_VERIFY(lywr_parse_wasm_value_type(ctx,mdl,&value->return_type[return_index]));
 		//TRACE("返回索引:%d\n",return_index);
 		//TRACE("返回类型:%x\n",value->return_type[return_index]);
@@ -400,7 +402,8 @@ lywrrc lywr_parse_wasm_elem_segment(lywr_ctx* ctx,lywr_module* mdl,wasm_elem_seg
 	value->elems = lywr_poolx_malloc(mdl->mloader,sizeof(*value->elems) * value->num_elem);
 	if(value->elems == nullptr) return lywrrc_oom;
 
-	for(wasm_varuint32 i = 0;i< value->num_elem;++i){
+	wasm_varuint32 i;
+	for(i = 0;i< value->num_elem;++i){
 		LYWRRC_VERIFY(lywr_parse_wasm_varuint32(ctx,mdl,&value->elems[i]));
 	}
 	return lywrrc_ok;
@@ -423,7 +426,8 @@ lywrrc lywr_parse_wasm_function_body(lywr_ctx* ctx,lywr_module* mdl,wasm_functio
 
 	value->locals = lywr_poolx_malloc(mdl->mloader,sizeof(*value->locals) * value->local_count);
 	if(value->locals == nullptr) return lywrrc_oom;
-	for(wasm_varuint32 i = 0;i< value->local_count;++i){
+	wasm_varuint32 i;
+	for(i = 0;i< value->local_count;++i){
 		LYWRRC_VERIFY(lywr_parse_wasm_local_entry(ctx,mdl,&value->locals[i]));
 	}
 	long long curseg2 = mdl->offset - curseg;

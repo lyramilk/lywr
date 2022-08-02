@@ -261,7 +261,8 @@ lywrrc lywr_parse_expr(wasm_byte* code,unsigned long long length,lywr_expression
 					return lywrrc_oom;
 				}
 				cr->u.br_table->target_count = target_count;
-				for(unsigned int i=0;i<target_count;++i){
+				unsigned int i;
+				for(i=0;i<target_count;++i){
 					lywr_leb128_get32u(&pc,cr->u.br_table->target_table + i);
 				}
 				lywr_leb128_get32u(&pc,&cr->u.br_table->default_target);
